@@ -3,7 +3,7 @@
  * Name: 50/50 Chance
  * Batch: 2
  * Level: 5
- * Instructions used: 1
+ * Instructions used: 0
  * 
  * Copyright (c) 2020 Max Baumann
  *
@@ -41,27 +41,24 @@ public class MyDogbot extends Dogbot {
         String s = "turnLeft,read,turnRight,move,,move";
         for (String instr : s.split(",")) {
             instr = (!instr.equals("")) ? instr : (r.equals("R") ? "turnRight" : "turnLeft");
-            String res = mdoRequest(instr, "", client, WORLD_URL);
+            String res = "";
+            try {
+                final okhttp3.Request request = new okhttp3.Request.Builder().url(WORLD_URL + instr)
+                        .post(okhttp3.RequestBody.create("", okhttp3.MediaType.get("text/plain; charset=utf-8")))
+                        .build();
+                final okhttp3.Response response = client.newCall(request).execute();
+                final String responseBody = (response.body() != null) ? response.body().string() : "";
+                if (response.code() == 410) {
+                    Thread.currentThread().stop();
+                }
+                res = responseBody;
+            } catch (java.io.IOException e) {
+                e.printStackTrace();
+                res = "";
+            }
             if (!res.equals("")) {
                 r = res;
             }
-        }
-    }
-
-    private static String mdoRequest(final String target, final String body, final okhttp3.OkHttpClient client,
-            final String WORLD_URL) {
-        try {
-            final okhttp3.Request request = new okhttp3.Request.Builder().url(WORLD_URL + target)
-                    .post(okhttp3.RequestBody.create(body, okhttp3.MediaType.get("text/plain; charset=utf-8"))).build();
-            final okhttp3.Response response = client.newCall(request).execute();
-            final String responseBody = (response.body() != null) ? response.body().string() : "";
-            if (response.code() == 410) {
-                Thread.currentThread().stop();
-            }
-            return responseBody;
-        } catch (java.io.IOException e) {
-            e.printStackTrace();
-            return "";
         }
     }
 }

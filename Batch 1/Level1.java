@@ -3,7 +3,7 @@
  * Name: Einfacher Umweg
  * Batch: 1
  * Level: 1
- * Instructions used: 1
+ * Instructions used: 0
  * 
  * Copyright (c) 2020 Max Baumann
  *
@@ -49,24 +49,19 @@ public class MyDogbot extends Dogbot {
         s += "move,";
 
         for (String instr : s.split(",")) {
-            mdoRequest(instr, "", client, WORLD_URL);
-        }
-    }
-
-    private static String mdoRequest(final String target, final String body, final okhttp3.OkHttpClient client,
-            final String WORLD_URL) {
-        try {
-            final okhttp3.Request request = new okhttp3.Request.Builder().url(WORLD_URL + target)
-                    .post(okhttp3.RequestBody.create(body, okhttp3.MediaType.get("text/plain; charset=utf-8"))).build();
-            final okhttp3.Response response = client.newCall(request).execute();
-            final String responseBody = (response.body() != null) ? response.body().string() : "";
-            if (response.code() == 410) {
-                Thread.currentThread().stop();
+            try {
+                final okhttp3.Request request = new okhttp3.Request.Builder().url(WORLD_URL + instr)
+                        .post(okhttp3.RequestBody.create("", okhttp3.MediaType.get("text/plain; charset=utf-8")))
+                        .build();
+                final okhttp3.Response response = client.newCall(request).execute();
+                final String responseBody = (response.body() != null) ? response.body().string() : "";
+                if (response.code() == 410) {
+                    Thread.currentThread().stop();
+                }
+            } catch (java.io.IOException e) {
+                e.printStackTrace();
             }
-            return responseBody;
-        } catch (java.io.IOException e) {
-            e.printStackTrace();
-            return "";
         }
+
     }
 }

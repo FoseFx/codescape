@@ -3,7 +3,7 @@
  * Name: In Darth Mauls Fußstapfen
  * Batch: 2
  * Level: 3
- * Instructions used: 1
+ * Instructions used: 0
  * 
  * Copyright (c) 2020 Max Baumann
  *
@@ -46,25 +46,22 @@ public class MyDogbot extends Dogbot {
                 } else {
                     instr = "rest";
                 }
-                r = mdoRequest(instr, "", client, WORLD_URL);
+                try {
+                    final okhttp3.Request request = new okhttp3.Request.Builder().url(WORLD_URL + instr)
+                            .post(okhttp3.RequestBody.create("", okhttp3.MediaType.get("text/plain; charset=utf-8")))
+                            .build();
+                    final okhttp3.Response response = client.newCall(request).execute();
+                    final String responseBody = (response.body() != null) ? response.body().string() : "";
+                    if (response.code() == 410) {
+                        Thread.currentThread().stop();
+                    }
+                    r = responseBody;
+                } catch (java.io.IOException e) {
+                    e.printStackTrace();
+                    r = "";
+                }
             }
         }
     }
 
-    private static String mdoRequest(final String target, final String body, final okhttp3.OkHttpClient client,
-            final String WORLD_URL) {
-        try {
-            final okhttp3.Request request = new okhttp3.Request.Builder().url(WORLD_URL + target)
-                    .post(okhttp3.RequestBody.create(body, okhttp3.MediaType.get("text/plain; charset=utf-8"))).build();
-            final okhttp3.Response response = client.newCall(request).execute();
-            final String responseBody = (response.body() != null) ? response.body().string() : "";
-            if (response.code() == 410) {
-                Thread.currentThread().stop();
-            }
-            return responseBody;
-        } catch (java.io.IOException e) {
-            e.printStackTrace();
-            return "";
-        }
-    }
 }
